@@ -3,6 +3,7 @@
 namespace Vyuldashev\NovaMoneyField;
 
 use Money\Currency;
+use Cknow\Money\Money as LaravelMoney;
 use Laravel\Nova\Fields\Number;
 use Money\Currencies\ISOCurrencies;
 use Money\Currencies\BitcoinCurrencies;
@@ -32,7 +33,7 @@ class Money extends Number
         $this->step(1 / $this->minorUnit($currency));
 
         $this->resolveUsing(function ($value) use ($currency) {
-            if ($value instanceof Money) {
+            if ($value instanceof LaravelMoney) {
                 return $value->formatByDecimal();
             }
 
@@ -45,7 +46,7 @@ class Money extends Number
                 $value *= $this->minorUnit($currency);
             }
 
-            $model->{$attribute} = $value instanceof Money ? $value : Money::{$currency->getCode()}($value);
+            $model->{$attribute} = $value instanceof LaravelMoney ? $value : Money::{$currency->getCode()}($value);
         });
     }
 
