@@ -39,14 +39,14 @@ class Money extends Number
 
             return $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float) $value;
         })->fillUsing(function (NovaRequest $request, $model, $attribute, $requestAttribute) use ($currency) {
-            $currency = new Currency($this->currency);
+            $currency = new Currency($this->meta()['currency']);
             $value = $request[$requestAttribute];
 
             if ($this->inMinorUnits) {
                 $value *= $this->minorUnit($currency);
             }
 
-            $model->{$attribute} = $value instanceof LaravelMoney ? $value : Money::{$currency->getCode()}($value);
+            $model->{$attribute} = $value instanceof LaravelMoney ? $value : LaravelMoney::{$currency->getCode()}($value);
         });
     }
 
