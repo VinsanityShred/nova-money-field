@@ -26,24 +26,27 @@ class Money extends Number
 
         $this->withMeta([
             'currency' => $currency,
-            'subUnits' => $this->subunits($currency),
+            'subUnits' => $this->subUnits($currency),
         ]);
 
         $this->step(1 / $this->minorUnit($currency));
 
-        $this
-            ->resolveUsing(function ($value) use ($currency) {
-                return $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float) $value;
-            })
-            ->fillUsing(function (NovaRequest $request, $model, $attribute, $requestAttribute) use ($currency) {
-                $value = $request[$requestAttribute];
+        $this->resolveUsing(function ($value) use ($currency) {
+            if ($value instanceof Money) {
+                return $value->formatByDecimal();
+            }
 
-                if ($this->inMinorUnits) {
-                    $value *= $this->minorUnit($currency);
-                }
+            return $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float) $value;
+        })->fillUsing(function (NovaRequest $request, $model, $attribute, $requestAttribute) use ($currency) {
+            $currency = new Currency($this->currency);
+            $value = $request[$requestAttribute];
 
-                $model->{$attribute} = $value;
-            });
+            if ($this->inMinorUnits) {
+                $value *= $this->minorUnit($currency);
+            }
+
+            $model->{$attribute} = $value instanceof Money ? $value : Money::{$currency->getCode()}($value);
+        });
     }
 
     /**
@@ -52,6 +55,13 @@ class Money extends Number
     public function storedInMinorUnits()
     {
         $this->inMinorUnits = true;
+
+        return $this;
+    }
+
+    public function currency(string $currency)
+    {
+        $this->withMeta(['currency' => $currency]);
 
         return $this;
     }
