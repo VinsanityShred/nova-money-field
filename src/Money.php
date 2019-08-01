@@ -34,13 +34,19 @@ class Money extends Number
 
         $this->step(1 / $this->minorUnit($currency));
 
-        $this->resolveUsing(function ($value) use ($currency) {
+        $this->displayUsing(function ($value) use ($currency) {
             if ($value instanceof LaravelMoney) {
                 return $this->getCurrencyAttribute() . $value->formatByDecimal();
             }
 
             return $this->getCurrencyAttribute() .
                    $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float)$value;
+        })->resolveUsing(function ($value) use ($currency) {
+            if ($value instanceof LaravelMoney) {
+                return $value->formatByDecimal();
+            }
+
+            return $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float)$value;
         })->fillUsing(function (NovaRequest $request, $model, $attribute, $requestAttribute) use ($currency) {
             $currency = new Currency($this->meta()['currency']);
             $value    = $request[$requestAttribute];
