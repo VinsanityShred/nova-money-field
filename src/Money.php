@@ -21,6 +21,8 @@ class Money extends Number
 
     public $inMinorUnits;
 
+    public $prependCurrency;
+
     public function __construct($name, $currency = 'USD', $attribute = null, $resolveCallback = null)
     {
         parent::__construct($name, $attribute, $resolveCallback);
@@ -34,10 +36,11 @@ class Money extends Number
 
         $this->resolveUsing(function ($value) use ($currency) {
             if ($value instanceof LaravelMoney) {
-                return $value->formatByDecimal();
+                return $this->getCurrencyAttribute() . $value->formatByDecimal();
             }
 
-            return $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float)$value;
+            return $this->getCurrencyAttribute() .
+                   $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float)$value;
         })->fillUsing(function (NovaRequest $request, $model, $attribute, $requestAttribute) use ($currency) {
             $currency = new Currency($this->meta()['currency']);
             $value    = $request[$requestAttribute];
@@ -83,8 +86,12 @@ class Money extends Number
         return $this;
     }
 
-    public function currency(string $currency)
+    public function currency($currency)
     {
+        if ($currency instanceof Currency) {
+            $currency = $currency->getCode();
+        }
+
         $this->withMeta(['currency' => $currency]);
 
         return $this;
