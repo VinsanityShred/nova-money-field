@@ -2,13 +2,13 @@
 
 namespace Vyuldashev\NovaMoneyField;
 
-use Money\Currency;
 use Cknow\Money\Money as LaravelMoney;
 use Laravel\Nova\Fields\Number;
-use Money\Currencies\ISOCurrencies;
-use Money\Currencies\BitcoinCurrencies;
-use Money\Currencies\AggregateCurrencies;
 use Laravel\Nova\Http\Requests\NovaRequest;
+use Money\Currencies\AggregateCurrencies;
+use Money\Currencies\BitcoinCurrencies;
+use Money\Currencies\ISOCurrencies;
+use Money\Currency;
 
 class Money extends Number
 {
@@ -37,10 +37,10 @@ class Money extends Number
                 return $value->formatByDecimal();
             }
 
-            return $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float) $value;
+            return $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float)$value;
         })->fillUsing(function (NovaRequest $request, $model, $attribute, $requestAttribute) use ($currency) {
             $currency = new Currency($this->meta()['currency']);
-            $value = $request[$requestAttribute];
+            $value    = $request[$requestAttribute];
 
             if ($this->inMinorUnits) {
                 $value *= $this->minorUnit($currency);
@@ -48,6 +48,29 @@ class Money extends Number
 
             $model->{$attribute} = $value instanceof LaravelMoney ? $value : LaravelMoney::{$currency->getCode()}($value);
         });
+    }
+
+    public function prependCurrency($attribute = 'symbol')
+    {
+        $this->prependCurrency = $attribute;
+
+        return $this;
+    }
+
+    protected function getCurrencyAttribute()
+    {
+        switch ($this->prependCurrency) {
+            case 'symbol':
+            case 'name':
+            case 'symbol_native':
+            case 'code':
+            case 'name_plural':
+                $currencyData = json_decode(file_get_contents(storage_path('/currencies.json')), true);
+
+                return $currencyData[$this->meta()['currency']][$this->prependCurrency] ?? '';
+            default:
+                return '';
+        }
     }
 
     /**
