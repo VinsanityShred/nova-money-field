@@ -36,7 +36,9 @@ class Money extends Number
 
         $this->displayUsing(function ($value) use ($currency) {
             if ($value instanceof LaravelMoney) {
-                return $this->getCurrencyAttribute() . $value->format();
+                return $this->getCurrencyAttribute()
+                    ? $this->getCurrencyAttribute() . $value->formatByDecimal()
+                    : $value->format();
             }
 
             return $this->getCurrencyAttribute() .
