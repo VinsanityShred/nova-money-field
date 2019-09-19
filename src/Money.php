@@ -76,7 +76,7 @@ class Money extends Number
             case 'symbol_native':
             case 'code':
             case 'name_plural':
-                $currencyData = json_decode(file_get_contents(storage_path('/currencies.json')), true);
+                $currencyData = json_decode(file_get_contents(app_path('Services/Billing/currencies.json')), true);
 
                 return $currencyData[$this->meta()['currency']][$this->prependCurrency] ?? '';
             default:
