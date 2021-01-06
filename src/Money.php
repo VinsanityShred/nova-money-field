@@ -43,7 +43,11 @@ class Money extends Number
 
             return $this->getCurrencyAttribute() .
                    $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float)$value;
-        })->resolveUsing(function ($value) use ($currency) {
+        })->resolveUsing(function ($value) use ($currency, $resolveCallback) {
+            if ($resolveCallback !== null) {
+                $value = call_user_func_array($resolveCallback, func_get_args());
+            }
+
             if ($value instanceof LaravelMoney) {
                 return $value->formatByDecimal();
             }
