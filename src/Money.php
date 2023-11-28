@@ -42,8 +42,9 @@ class Money extends Number
             }
 
             return $this->getCurrencyAttribute() .
-                   $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float)$value;
-        })->resolveUsing(function ($value) use ($currency, $resolveCallback) {
+                   $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float) $value;
+        })
+        ->resolveUsing(function ($value) use ($currency, $resolveCallback) {
             if ($resolveCallback !== null) {
                 $value = call_user_func_array($resolveCallback, func_get_args());
             }
@@ -52,9 +53,6 @@ class Money extends Number
                 return $value->formatByDecimal();
             }
 
-            return $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float) $value;
-        })
-        ->displayUsing(function ($value) use ($currency) {
             return $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float) $value;
         })
         ->fillUsing(function (NovaRequest $request, $model, $attribute, $requestAttribute) use ($currency) {
