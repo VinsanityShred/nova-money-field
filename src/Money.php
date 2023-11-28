@@ -52,8 +52,12 @@ class Money extends Number
                 return $value->formatByDecimal();
             }
 
-            return $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float)$value;
-        })->fillUsing(function (NovaRequest $request, $model, $attribute, $requestAttribute) use ($currency) {
+            return $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float) $value;
+        })
+        ->displayUsing(function ($value) use ($currency) {
+            return $this->inMinorUnits ? $value / $this->minorUnit($currency) : (float) $value;
+        })
+        ->fillUsing(function (NovaRequest $request, $model, $attribute, $requestAttribute) use ($currency) {
             $currency = new Currency($this->meta()['currency']);
             $value    = $request[$requestAttribute];
 
